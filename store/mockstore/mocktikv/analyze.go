@@ -176,13 +176,6 @@ func (h *rpcHandler) handleAnalyzeColumnsReq(req *coprocessor.Request, analyzeRe
 			rd:             rd,
 		},
 	}
-	e.fields = make([]*ast.ResultField, len(columns))
-	for i := range e.fields {
-		rf := new(ast.ResultField)
-		rf.Column = new(model.ColumnInfo)
-		rf.Column.FieldType = types.FieldType{Tp: mysql.TypeBlob, Flen: mysql.MaxBlobWidth, Charset: mysql.DefaultCharset, Collate: mysql.DefaultCollationName}
-		e.fields[i] = rf
-	}
 
 	pkID := int64(-1)
 	numCols := len(columns)
@@ -191,6 +184,15 @@ func (h *rpcHandler) handleAnalyzeColumnsReq(req *coprocessor.Request, analyzeRe
 		columns = columns[1:]
 		numCols--
 	}
+
+	e.fields = make([]*ast.ResultField, numCols)
+	for i := range e.fields {
+		rf := new(ast.ResultField)
+		rf.Column = new(model.ColumnInfo)
+		rf.Column.FieldType = types.FieldType{Tp: mysql.TypeBlob, Flen: mysql.MaxBlobWidth, Charset: mysql.DefaultCharset, Collate: mysql.DefaultCollationName}
+		e.fields[i] = rf
+	}
+
 	collators := make([]collate.Collator, numCols)
 	fts := make([]*types.FieldType, numCols)
 	for i, col := range columns {
